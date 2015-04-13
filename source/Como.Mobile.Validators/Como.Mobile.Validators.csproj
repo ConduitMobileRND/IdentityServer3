@@ -57,7 +57,7 @@
     <Compile Include="IRequestValidatorHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestValidatorHelper.cs" />
-    <Compile Include="StringExctensions.cs" />
+    <Compile Include="StringExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

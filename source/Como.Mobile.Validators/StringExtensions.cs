@@ -1,6 +1,6 @@
 ﻿namespace Como.Mobile.Validators
 {
-    public static class StringsExctensions
+    public static class StringsExtensions
     {
         public static string EnsureTrailingSlash(this string url)
         {

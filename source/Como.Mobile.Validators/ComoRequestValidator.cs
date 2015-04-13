@@ -4,7 +4,6 @@ using System.Collections.Specialized;
 using System.Configuration;
 using System.Linq;
 using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 using Thinktecture.IdentityModel;
 using Thinktecture.IdentityServer.Core;
@@ -78,6 +77,7 @@ namespace Como.Mobile.Validators
             }
             return Valid();
         }
+
 
         private ValidationResult Valid()
         {
