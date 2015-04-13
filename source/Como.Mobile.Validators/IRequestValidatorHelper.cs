@@ -1,4 +1,4 @@
-﻿namespace Thinktecture.IdentityServer.Core.Validation
+﻿namespace Como.Mobile.Validators
 {
     public interface IRequestValidatorHelper
     {

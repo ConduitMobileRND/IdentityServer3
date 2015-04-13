@@ -255,8 +255,6 @@
     <Compile Include="Logging\Models\TokenValidationLog.cs" />
     <Compile Include="Logging\Models\TokenRequestValidationLog.cs" />
     <Compile Include="Validation\ErrorTypes.cs" />
-    <Compile Include="Validation\IRequestValidatorHelper.cs" />
-    <Compile Include="Validation\RequestValidatorHelper.cs" />
     <Compile Include="Validation\TokenRevocationRequestValidationResult.cs" />
     <Compile Include="Validation\TokenRevocationRequestValidator.cs" />
     <Compile Include="Validation\ValidationResultBase.cs" />
@@ -575,6 +573,12 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Como.Mobile.Validators\Como.Mobile.Validators.csproj">
+      <Project>{95B302CF-6206-43C5-B844-F7A324D5B1F0}</Project>
+      <Name>Como.Mobile.Validators</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

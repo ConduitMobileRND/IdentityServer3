@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using Como.Mobile.Validators;
 using Thinktecture.IdentityServer.Core.Logging;
 using Thinktecture.IdentityServer.Core.Services;
 using Thinktecture.IdentityServer.Core.Services.Default;
@@ -287,7 +288,12 @@ namespace Thinktecture.IdentityServer.Core.Configuration
         /// <value>
         /// The request validation helper.
         /// </value>
-        public Registration<Validation.IRequestValidatorHelper> RequestValidatorHelper { get; set; }
+        public Registration<IRequestValidatorHelper> RequestValidatorHelper { get; set; }
+
+        /// <summary>
+        /// Gets or sets COMO custom validator.
+        /// </summary>
+        public Registration<IComoRequestValidator> ComoRequestValidator { get; set; }
 
         internal void Validate()
         {

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using Como.Mobile.Validators;
 using Microsoft.Owin;
 using Moq;
 using System.Collections.Generic;
@@ -50,6 +51,25 @@ namespace Thinktecture.IdentityServer.Tests.Validation
             return new ClientValidator(clients, secretValidator);
         }
 
+        public static ComoRequestValidator CreateComoRequestValidator(IRequestValidatorHelper requestValidatorHelper, IdentityServerOptions options = null, ITokenSigningService signingService = null)
+        {
+            if (options == null)
+            {
+                options = TestIdentityServerOptions.Create();
+            }
+            if (signingService == null)
+            {
+                signingService = new DefaultTokenSigningService(options);
+            }
+            if (requestValidatorHelper == null)
+            {
+                requestValidatorHelper = new Mock<IRequestValidatorHelper>().Object;
+            }
+            return new ComoRequestValidator(requestValidatorHelper,options,signingService);
+        }
+
+
+
         public static TokenRequestValidator CreateTokenRequestValidator(
             IdentityServerOptions options = null,
             IScopeStore scopes = null,
@@ -58,8 +78,7 @@ namespace Thinktecture.IdentityServer.Tests.Validation
             IUserService userService = null,
             ICustomGrantValidator customGrantValidator = null,
             ICustomRequestValidator customRequestValidator = null,
-            ScopeValidator scopeValidator = null,
-            ITokenSigningService tokenSigningService = null,IRequestValidatorHelper requestValidatorHelper = null)
+            ScopeValidator scopeValidator = null)
         {
             if (options == null)
             {
@@ -95,17 +114,6 @@ namespace Thinktecture.IdentityServer.Tests.Validation
             {
                 scopeValidator = new ScopeValidator(scopes);
             }
-
-            if (tokenSigningService == null)
-            {
-                tokenSigningService = new DefaultTokenSigningService(options);
-            }
-
-            if (requestValidatorHelper == null)
-            {
-                requestValidatorHelper = new Mock<IRequestValidatorHelper>().Object;
-            }
-
             return new TokenRequestValidator(
                 options, 
                 authorizationCodeStore, 
@@ -114,7 +122,7 @@ namespace Thinktecture.IdentityServer.Tests.Validation
                 customGrantValidator, 
                 customRequestValidator, 
                 scopeValidator,
-                new DefaultEventService(), tokenSigningService, requestValidatorHelper);
+                new DefaultEventService());
         }
 
         public static AuthorizeRequestValidator CreateAuthorizeRequestValidator(

@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Como.Mobile.Validators;
 using Thinktecture.IdentityServer.Core.Configuration;
 using Thinktecture.IdentityServer.Core.Configuration.Hosting;
 using Thinktecture.IdentityServer.Core.Events;
@@ -49,6 +50,7 @@ namespace Thinktecture.IdentityServer.Core.Endpoints
         private readonly ClientValidator _clientValidator;
         private readonly IdentityServerOptions _options;
         private readonly IEventService _events;
+        private readonly IComoRequestValidator _comoRequestValidator;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TokenEndpointController" /> class.
@@ -58,13 +60,16 @@ namespace Thinktecture.IdentityServer.Core.Endpoints
         /// <param name="clientValidator">The client validator.</param>
         /// <param name="generator">The generator.</param>
         /// <param name="events">The events service.</param>
-        public TokenEndpointController(IdentityServerOptions options, TokenRequestValidator requestValidator, ClientValidator clientValidator, TokenResponseGenerator generator, IEventService events)
+        /// <param name="comoRequestValidator"></param>
+        public TokenEndpointController(IdentityServerOptions options, TokenRequestValidator requestValidator, 
+            ClientValidator clientValidator, TokenResponseGenerator generator, IEventService events,IComoRequestValidator comoRequestValidator)
         {
             _requestValidator = requestValidator;
             _clientValidator = clientValidator;
             _generator = generator;
             _options = options;
             _events = events;
+            _comoRequestValidator = comoRequestValidator;
         }
 
         /// <summary>
@@ -115,7 +120,7 @@ namespace Thinktecture.IdentityServer.Core.Endpoints
                 return this.TokenErrorResponse(Constants.TokenErrors.InvalidClient);
             }
 
-            var appidvalidation = await _requestValidator.ValidateRequestForAppIdAsync(parameters, client);
+            var appidvalidation = await _comoRequestValidator.Validate(parameters, client);
             if (appidvalidation.IsError)
             {
                 return this.TokenErrorResponse(appidvalidation.Error);

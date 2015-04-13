@@ -16,6 +16,7 @@
 
 using Autofac;
 using Autofac.Integration.WebApi;
+using Como.Mobile.Validators;
 using Microsoft.Owin;
 using System;
 using Thinktecture.IdentityServer.Core.Endpoints;
@@ -62,6 +63,7 @@ namespace Thinktecture.IdentityServer.Core.Configuration.Hosting
             builder.RegisterDefaultType<IRefreshTokenService, DefaultRefreshTokenService>(fact.RefreshTokenService);
             builder.RegisterDefaultType<ITokenSigningService, DefaultTokenSigningService>(fact.TokenSigningService);
             builder.RegisterDefaultType<IRequestValidatorHelper, RequestValidatorHelper>(fact.RequestValidatorHelper);
+            builder.RegisterDefaultType<IComoRequestValidator, ComoRequestValidator>(fact.ComoRequestValidator);
             builder.RegisterDefaultType<ICustomRequestValidator, DefaultCustomRequestValidator>(fact.CustomRequestValidator);
             builder.RegisterDefaultType<ICustomGrantValidator, DefaultCustomGrantValidator>(fact.CustomGrantValidator);
             builder.RegisterDefaultType<IExternalClaimsFilter, NopClaimsFilter>(fact.ExternalClaimsFilter);

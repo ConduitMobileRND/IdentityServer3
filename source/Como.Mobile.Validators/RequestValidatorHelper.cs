@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Thinktecture.IdentityModel.Http;
 
-namespace Thinktecture.IdentityServer.Core.Validation
+namespace Como.Mobile.Validators
 {
     public class RequestValidatorHelper : IRequestValidatorHelper
     {

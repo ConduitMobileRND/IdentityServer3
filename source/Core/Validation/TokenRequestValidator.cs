@@ -22,6 +22,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Como.Mobile.Validators;
 using Newtonsoft.Json;
 using Thinktecture.IdentityModel;
 using Thinktecture.IdentityModel.Http;
@@ -44,16 +45,13 @@ namespace Thinktecture.IdentityServer.Core.Validation
         private readonly IdentityServerOptions _options;
         private readonly IRefreshTokenStore _refreshTokens;
         private readonly ScopeValidator _scopeValidator;
-        private readonly ITokenSigningService _signingService;
-        private readonly IRequestValidatorHelper _requestValidatorHelper;
         private readonly IUserService _users;
 
         private ValidatedTokenRequest _validatedRequest;
 
         public TokenRequestValidator(IdentityServerOptions options, IAuthorizationCodeStore authorizationCodes,
             IRefreshTokenStore refreshTokens, IUserService users, ICustomGrantValidator customGrantValidator,
-            ICustomRequestValidator customRequestValidator, ScopeValidator scopeValidator, IEventService events,
-            ITokenSigningService signingService,IRequestValidatorHelper requestValidatorHelper )
+            ICustomRequestValidator customRequestValidator, ScopeValidator scopeValidator, IEventService events)
         {
             _options = options;
             _authorizationCodes = authorizationCodes;
@@ -63,8 +61,6 @@ namespace Thinktecture.IdentityServer.Core.Validation
             _customRequestValidator = customRequestValidator;
             _scopeValidator = scopeValidator;
             _events = events;
-            _signingService = signingService;
-            _requestValidatorHelper = requestValidatorHelper;
         }
 
         public ValidatedTokenRequest ValidatedRequest
@@ -73,52 +69,7 @@ namespace Thinktecture.IdentityServer.Core.Validation
         }
 
 
-        public async Task<ValidationResult> ValidateRequestForAppIdAsync(NameValueCollection parameters, Client client)
-        {
-            Logger.Info("Start token request validation for appid with CPMS.");
-            string appId = parameters.Get(Constants.TokenRequest.AppId);
-            string publisherid = parameters.Get(Constants.TokenRequest.PublisherId);
-            if (appId != null)
-            {
-                var outputClaims = new List<Claim>
-                {
-                    new Claim(Constants.ClaimTypes.ClientId, client.ClientId),
-                };
-
-                // add scope
-                outputClaims.Add(new Claim(Constants.ClaimTypes.Scope, Constants.StandardScopes.application));
-                //add appid
-                outputClaims.Add(new Claim(Constants.ClaimTypes.Appid, appId));
-                var token = new Token(Constants.TokenTypes.AccessToken)
-                {
-                    Audience = string.Format(Constants.AccessTokenAudience, _options.IssuerUri.EnsureTrailingSlash()),
-                    Issuer = _options.IssuerUri,
-                    Lifetime = client.AccessTokenLifetime,
-                    Claims = outputClaims.Distinct(new ClaimComparer()).ToList(),
-                    Client = client
-                };
-
-                string signedToken = await _signingService.SignTokenAsync(token);
-
-                string servicePublisherId = _requestValidatorHelper.CallServiceGet(signedToken, ConfigurationManager.AppSettings["cpmsuri"],
-                    "publisherid");
-
-                //TODO:merge if and extract to diff class
-                if (servicePublisherId == null)
-                {
-                    return Valid();
-                }
-                if (servicePublisherId.Equals(publisherid, StringComparison.Ordinal))
-                {
-                    return Valid();
-                }
-
-                return Invalid("Application Id is not valid");
-            }
-            return Valid();
-        }
-
-
+       
         public async Task<ValidationResult> ValidateRequestAsync(NameValueCollection parameters, Client client)
         {
             Logger.Info("Start token request validation");

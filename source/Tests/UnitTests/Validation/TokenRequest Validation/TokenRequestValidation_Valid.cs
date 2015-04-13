@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using Como.Mobile.Validators;
 using FluentAssertions;
 using Moq;
 using System;
@@ -140,7 +141,7 @@ namespace Thinktecture.IdentityServer.Tests.Validation.TokenRequest
             var reqValidorMock = new Mock<IRequestValidatorHelper>();
             reqValidorMock.Setup(r => r.CallServiceGet(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns((string)null);
             var requestValidatorHelper = reqValidorMock.Object;
-            var validator = Factory.CreateTokenRequestValidator(null,null,null,null,null,null,null,null,null,requestValidatorHelper);
+            var validator = Factory.CreateComoRequestValidator(requestValidatorHelper);
 
             
             
@@ -148,7 +149,7 @@ namespace Thinktecture.IdentityServer.Tests.Validation.TokenRequest
             parameters.Add(Constants.ClaimTypes.Appid, Guid.NewGuid().ToString());
            
 
-            var result = await validator.ValidateRequestForAppIdAsync(parameters, client);
+            var result = await validator.Validate(parameters, client);
 
             result.IsError.Should().BeFalse();
         }
@@ -165,7 +166,7 @@ namespace Thinktecture.IdentityServer.Tests.Validation.TokenRequest
             var reqValidorMock = new Mock<IRequestValidatorHelper>();
             reqValidorMock.Setup(r => r.CallServiceGet(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(Guid.NewGuid().ToString);
             var requestValidatorHelper = reqValidorMock.Object;
-            var validator = Factory.CreateTokenRequestValidator(null, null, null, null, null, null, null, null, null, requestValidatorHelper);
+            var validator = Factory.CreateComoRequestValidator(requestValidatorHelper);
 
 
 
@@ -173,7 +174,7 @@ namespace Thinktecture.IdentityServer.Tests.Validation.TokenRequest
             parameters.Add(Constants.ClaimTypes.Appid, Guid.NewGuid().ToString());
 
 
-            var result = await validator.ValidateRequestForAppIdAsync(parameters, client);
+            var result = await validator.Validate(parameters, client);
 
             result.IsError.Should().BeTrue();
         }
@@ -186,10 +187,9 @@ namespace Thinktecture.IdentityServer.Tests.Validation.TokenRequest
             var reqValidorMock = new Mock<IRequestValidatorHelper>();
             reqValidorMock.Setup(r => r.CallServiceGet(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(Guid.NewGuid().ToString);
             var requestValidatorHelper = reqValidorMock.Object;
-            var validator = Factory.CreateTokenRequestValidator(null, null, null, null, null, null, null, null, null,
-                requestValidatorHelper);
+            var validator = Factory.CreateComoRequestValidator(requestValidatorHelper);
             var parameters = new NameValueCollection();
-            var result = await validator.ValidateRequestForAppIdAsync(parameters, client);
+            var result = await validator.Validate(parameters, client);
 
             result.IsError.Should().BeFalse();
         }
@@ -204,12 +204,11 @@ namespace Thinktecture.IdentityServer.Tests.Validation.TokenRequest
             var reqValidorMock = new Mock<IRequestValidatorHelper>();
             reqValidorMock.Setup(r => r.CallServiceGet(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(publisherId.ToString);
             var requestValidatorHelper = reqValidorMock.Object;
-            var validator = Factory.CreateTokenRequestValidator(null, null, null, null, null, null, null, null, null,
-                requestValidatorHelper);
+            var validator = Factory.CreateComoRequestValidator(requestValidatorHelper);
             var parameters = new NameValueCollection();
             parameters.Add(Constants.ClaimTypes.Appid, Guid.NewGuid().ToString());
             parameters.Add(Constants.ClaimTypes.PublisherId, publisherId.ToString());
-            var result = await validator.ValidateRequestForAppIdAsync(parameters, client);
+            var result = await validator.Validate(parameters, client);
 
             result.IsError.Should().BeFalse();
         }
@@ -225,12 +224,11 @@ namespace Thinktecture.IdentityServer.Tests.Validation.TokenRequest
             var reqValidorMock = new Mock<IRequestValidatorHelper>();
             reqValidorMock.Setup(r => r.CallServiceGet(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(publisherId.ToString);
             var requestValidatorHelper = reqValidorMock.Object;
-            var validator = Factory.CreateTokenRequestValidator(null, null, null, null, null, null, null, null, null,
-                requestValidatorHelper);
+            var validator = Factory.CreateComoRequestValidator(requestValidatorHelper);
             var parameters = new NameValueCollection();
             parameters.Add(Constants.ClaimTypes.Appid, Guid.NewGuid().ToString());
             parameters.Add(Constants.ClaimTypes.PublisherId, Guid.NewGuid().ToString());
-            var result = await validator.ValidateRequestForAppIdAsync(parameters, client);
+            var result = await validator.Validate(parameters, client);
 
             result.IsError.Should().BeTrue();
         }
