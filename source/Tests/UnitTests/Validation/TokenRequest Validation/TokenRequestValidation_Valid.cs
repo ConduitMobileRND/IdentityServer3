@@ -25,6 +25,7 @@ using Thinktecture.IdentityServer.Core;
 using Thinktecture.IdentityServer.Core.Models;
 using Thinktecture.IdentityServer.Core.Services;
 using Thinktecture.IdentityServer.Core.Services.InMemory;
+using Thinktecture.IdentityServer.Core.Validation;
 using Xunit;
 
 namespace Thinktecture.IdentityServer.Tests.Validation.TokenRequest
@@ -126,6 +127,114 @@ namespace Thinktecture.IdentityServer.Tests.Validation.TokenRequest
 
             result.IsError.Should().BeFalse();
         }
+
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task Valid_ClientCredentials_IfCollectionIncludsOnlyAppId_And_IfPublisherId_ReturnedFromCPMSIsNull_ThenValid()
+        {
+            var client = await _clients.FindClientByIdAsync("client");
+
+
+
+            var reqValidorMock = new Mock<IRequestValidatorHelper>();
+            reqValidorMock.Setup(r => r.CallServiceGet(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns((string)null);
+            var requestValidatorHelper = reqValidorMock.Object;
+            var validator = Factory.CreateTokenRequestValidator(null,null,null,null,null,null,null,null,null,requestValidatorHelper);
+
+            
+            
+            var parameters = new NameValueCollection();
+            parameters.Add(Constants.ClaimTypes.Appid, Guid.NewGuid().ToString());
+           
+
+            var result = await validator.ValidateRequestForAppIdAsync(parameters, client);
+
+            result.IsError.Should().BeFalse();
+        }
+
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task Valid_ClientCredentials_IfCollectionIncludsOnlyAppId_And_IfPublisherId_ReturnedFromCPMSIsNotNull_ThenNotValid()
+        {
+            var client = await _clients.FindClientByIdAsync("client");
+
+
+
+            var reqValidorMock = new Mock<IRequestValidatorHelper>();
+            reqValidorMock.Setup(r => r.CallServiceGet(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(Guid.NewGuid().ToString);
+            var requestValidatorHelper = reqValidorMock.Object;
+            var validator = Factory.CreateTokenRequestValidator(null, null, null, null, null, null, null, null, null, requestValidatorHelper);
+
+
+
+            var parameters = new NameValueCollection();
+            parameters.Add(Constants.ClaimTypes.Appid, Guid.NewGuid().ToString());
+
+
+            var result = await validator.ValidateRequestForAppIdAsync(parameters, client);
+
+            result.IsError.Should().BeTrue();
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task Valid_ClientCredentials_IfCollectionNotIncludesAppId_ThenValid()
+        {
+            var client = await _clients.FindClientByIdAsync("client");
+            var reqValidorMock = new Mock<IRequestValidatorHelper>();
+            reqValidorMock.Setup(r => r.CallServiceGet(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(Guid.NewGuid().ToString);
+            var requestValidatorHelper = reqValidorMock.Object;
+            var validator = Factory.CreateTokenRequestValidator(null, null, null, null, null, null, null, null, null,
+                requestValidatorHelper);
+            var parameters = new NameValueCollection();
+            var result = await validator.ValidateRequestForAppIdAsync(parameters, client);
+
+            result.IsError.Should().BeFalse();
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task Valid_ClientCredentials_IfCollectionIncludesAppId_AndPublisherId_And_IfPublisherId_ReturnedFromCPMS_EqualsToParameter_ThenValid()
+        {
+            var client = await _clients.FindClientByIdAsync("client");
+
+            var publisherId = Guid.NewGuid();
+            var reqValidorMock = new Mock<IRequestValidatorHelper>();
+            reqValidorMock.Setup(r => r.CallServiceGet(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(publisherId.ToString);
+            var requestValidatorHelper = reqValidorMock.Object;
+            var validator = Factory.CreateTokenRequestValidator(null, null, null, null, null, null, null, null, null,
+                requestValidatorHelper);
+            var parameters = new NameValueCollection();
+            parameters.Add(Constants.ClaimTypes.Appid, Guid.NewGuid().ToString());
+            parameters.Add(Constants.ClaimTypes.PublisherId, publisherId.ToString());
+            var result = await validator.ValidateRequestForAppIdAsync(parameters, client);
+
+            result.IsError.Should().BeFalse();
+        }
+
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task Valid_ClientCredentials_IfCollectionIncludesAppId_AndPublisherId_And_IfPublisherId_ReturnedFromCPMS_NotEqualsToParameter_ThenNotValid()
+        {
+            var client = await _clients.FindClientByIdAsync("client");
+
+            var publisherId = Guid.NewGuid();
+            var reqValidorMock = new Mock<IRequestValidatorHelper>();
+            reqValidorMock.Setup(r => r.CallServiceGet(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(publisherId.ToString);
+            var requestValidatorHelper = reqValidorMock.Object;
+            var validator = Factory.CreateTokenRequestValidator(null, null, null, null, null, null, null, null, null,
+                requestValidatorHelper);
+            var parameters = new NameValueCollection();
+            parameters.Add(Constants.ClaimTypes.Appid, Guid.NewGuid().ToString());
+            parameters.Add(Constants.ClaimTypes.PublisherId, Guid.NewGuid().ToString());
+            var result = await validator.ValidateRequestForAppIdAsync(parameters, client);
+
+            result.IsError.Should().BeTrue();
+        }
+
 
         [Fact]
         [Trait("Category", Category)]

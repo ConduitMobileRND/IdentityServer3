@@ -300,8 +300,7 @@ namespace Thinktecture.IdentityServer.Tests.Validation.TokenRequest
             await store.StoreAsync("valid", code);
 
             var validator = Factory.CreateTokenRequestValidator(
-                authorizationCodeStore: store,
-                customRequestValidator: new DefaultCustomRequestValidator());
+                authorizationCodeStore: store);
 
             var parameters = new NameValueCollection();
             parameters.Add(Constants.TokenRequest.GrantType, Constants.GrantTypes.AuthorizationCode);
@@ -315,8 +314,7 @@ namespace Thinktecture.IdentityServer.Tests.Validation.TokenRequest
 
             // request second time
             validator = Factory.CreateTokenRequestValidator(
-                authorizationCodeStore: store,
-                customRequestValidator: new DefaultCustomRequestValidator());
+                authorizationCodeStore: store);
             
             result = await validator.ValidateRequestAsync(parameters, client);
 

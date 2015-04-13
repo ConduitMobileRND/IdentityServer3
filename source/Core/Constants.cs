@@ -104,6 +104,8 @@ namespace Thinktecture.IdentityServer.Core
             public const string Scope        = "scope";
             public const string UserName     = "username";
             public const string Password     = "password";
+            public const string AppId =             "appid";
+            public const string PublisherId = "publisherid";
         }
 
         public static class EndSessionRequest
@@ -385,10 +387,12 @@ namespace Thinktecture.IdentityServer.Core
             public const string Address       = "address";
             public const string Phone         = "phone";
             public const string OfflineAccess = "offline_access";
+            
 
             // not part of spec
             public const string AllClaims     = "all_claims";
             public const string Roles         = "roles";
+            public const string application = "application";
         }
 
         public static class ClaimTypes
@@ -438,7 +442,8 @@ namespace Thinktecture.IdentityServer.Core
             public const string IdentityProvider = "idp";
             public const string Role             = "role";
             public const string ReferenceTokenId = "reference_token_id";
-
+            public const string Appid            = "appid";
+            public const string PublisherId      = "publisherid";
             // claims for authentication controller partial logins
             public const string AuthorizationReturnUrl = "authorization_return_url";
             public const string PartialLoginReturnUrl = "partial_login_return_url";

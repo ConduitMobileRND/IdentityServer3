@@ -14,51 +14,62 @@
  * limitations under the License.
  */
 
+using System.Configuration;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Facebook;
 using Microsoft.Owin.Security.Google;
-using Microsoft.Owin.Security.OpenIdConnect;
 using Microsoft.Owin.Security.Twitter;
-using Microsoft.Owin.Security.WsFederation;
 using Owin;
+using Thinktecture.IdentityManager.Configuration;
 using Thinktecture.IdentityServer.Core.Configuration;
 using Thinktecture.IdentityServer.Core.Logging;
-using Thinktecture.IdentityServer.Core.Services;
 using Thinktecture.IdentityServer.Host;
 using Thinktecture.IdentityServer.Host.Config;
+using Thinktecture.IdentityServer.Host.IdMgr;
 
-[assembly: OwinStartup("LocalTest", typeof(Startup_LocalTest))]
+[assembly: OwinStartup(typeof(Startup))]
 
 namespace Thinktecture.IdentityServer.Host
 {
-    public class Startup_LocalTest
+    public class Startup
     {
         public void Configuration(IAppBuilder app)
         {
             LogProvider.SetCurrentLogProvider(new DiagnosticsTraceLogProvider());
-            //LogProvider.SetCurrentLogProvider(new TraceSourceLogProvider());
 
             // uncomment to enable HSTS headers for the host
             // see: https://developer.mozilla.org/en-US/docs/Web/Security/HTTP_strict_transport_security
             //app.UseHsts();
 
+            app.Map("/admin", adminApp =>
+            {
+                var factory = new IdentityManagerServiceFactory();
+                factory.ConfigureSimpleIdentityManagerService("AspId");
+
+                adminApp.UseIdentityManager(new IdentityManagerOptions()
+                {
+                    Factory = factory
+                });
+            });
+
+
             app.Map("/core", coreApp =>
                 {
-                    var factory = InMemoryFactory.Create(
-                        users:   Users.Get(),
-                        clients: Clients.Get(),
-                        scopes:  Scopes.Get());
+                    //In order to run server under hard coded collection of
+                    //iusers use following configuration: var factory =
+                    //InMemoryFactory.Create(
+                    //    users:   Users.Get(),
+                    //    clients: Clients.Get(),
+                    //    scopes:  Scopes.Get());
 
-                    factory.CustomGrantValidator = 
-                        new Registration<ICustomGrantValidator>(typeof(CustomGrantValidator));
+                    var idSvrFactory = Factory.Configure();
+                    idSvrFactory.ConfigureUserService("AspId");
 
-                    factory.ConfigureClientStoreCache();
-                    factory.ConfigureScopeStoreCache();
-                    factory.ConfigureUserServiceCache();
+
 
                     var idsrvOptions = new IdentityServerOptions
                     {
-                        Factory = factory,
+                        Factory = idSvrFactory,
                         SigningCertificate = Cert.Load(),
 
                         CorsPolicy = CorsPolicy.AllowAll,
@@ -95,9 +106,9 @@ namespace Thinktecture.IdentityServer.Host
                 AuthenticationType = "Google",
                 Caption = "Google",
                 SignInAsAuthenticationType = signInAsType,
-                
-                ClientId = "767400843187-8boio83mb57ruogr9af9ut09fkg56b27.apps.googleusercontent.com",
-                ClientSecret = "5fWcBT0udKY7_b6E3gEiJlze"
+
+                ClientId = ConfigurationManager.AppSettings["googleclientid"],
+                ClientSecret = ConfigurationManager.AppSettings["googleclientsecret"]
             };
             app.UseGoogleAuthentication(google);
 
@@ -106,9 +117,9 @@ namespace Thinktecture.IdentityServer.Host
                 AuthenticationType = "Facebook",
                 Caption = "Facebook",
                 SignInAsAuthenticationType = signInAsType,
-                
-                AppId = "676607329068058",
-                AppSecret = "9d6ab75f921942e61fb43a9b1fc25c63"
+
+                AppId = ConfigurationManager.AppSettings["facebookappid"],
+                AppSecret = ConfigurationManager.AppSettings["facebookappsecret"]
             };
             app.UseFacebookAuthentication(fb);
 
@@ -122,30 +133,6 @@ namespace Thinktecture.IdentityServer.Host
                 ConsumerSecret = "df15L2x6kNI50E4PYcHS0ImBQlcGIt6huET8gQN41VFpUCwNjM"
             };
             app.UseTwitterAuthentication(twitter);
-
-            var adfs = new WsFederationAuthenticationOptions
-            {
-                AuthenticationType = "adfs",
-                Caption = "ADFS",
-                SignInAsAuthenticationType = signInAsType,
-
-                MetadataAddress = "https://adfs.leastprivilege.vm/federationmetadata/2007-06/federationmetadata.xml",
-                Wtrealm = "urn:idsrv3"
-            };
-            app.UseWsFederationAuthentication(adfs);
-
-            var aad = new OpenIdConnectAuthenticationOptions
-            {
-                AuthenticationType = "aad",
-                Caption = "Azure AD",
-                SignInAsAuthenticationType = signInAsType,
-
-                Authority = "https://login.windows.net/4ca9cb4c-5e5f-4be9-b700-c532992a3705",
-                ClientId = "65bbbda8-8b85-4c9d-81e9-1502330aacba",
-                RedirectUri = "https://localhost:44333/core/aadcb"
-            };
-
-            app.UseOpenIdConnectAuthentication(aad);
         }
     }
 }

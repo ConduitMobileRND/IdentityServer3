@@ -15,9 +15,16 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Configuration;
 using System.Linq;
+using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Thinktecture.IdentityModel;
+using Thinktecture.IdentityModel.Http;
 using Thinktecture.IdentityServer.Core.Configuration;
 using Thinktecture.IdentityServer.Core.Extensions;
 using Thinktecture.IdentityServer.Core.Logging;
@@ -28,28 +35,25 @@ namespace Thinktecture.IdentityServer.Core.Validation
 {
     internal class TokenRequestValidator
     {
-        private readonly static ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
-        private readonly IdentityServerOptions _options;
         private readonly IAuthorizationCodeStore _authorizationCodes;
-        private readonly IUserService _users;
         private readonly ICustomGrantValidator _customGrantValidator;
         private readonly ICustomRequestValidator _customRequestValidator;
+        private readonly IEventService _events;
+        private readonly IdentityServerOptions _options;
         private readonly IRefreshTokenStore _refreshTokens;
         private readonly ScopeValidator _scopeValidator;
-        private readonly IEventService _events;
+        private readonly ITokenSigningService _signingService;
+        private readonly IRequestValidatorHelper _requestValidatorHelper;
+        private readonly IUserService _users;
 
         private ValidatedTokenRequest _validatedRequest;
 
-        public ValidatedTokenRequest ValidatedRequest
-        {
-            get
-            {
-                return _validatedRequest;
-            }
-        }
-
-        public TokenRequestValidator(IdentityServerOptions options, IAuthorizationCodeStore authorizationCodes, IRefreshTokenStore refreshTokens, IUserService users, ICustomGrantValidator customGrantValidator, ICustomRequestValidator customRequestValidator, ScopeValidator scopeValidator, IEventService events)
+        public TokenRequestValidator(IdentityServerOptions options, IAuthorizationCodeStore authorizationCodes,
+            IRefreshTokenStore refreshTokens, IUserService users, ICustomGrantValidator customGrantValidator,
+            ICustomRequestValidator customRequestValidator, ScopeValidator scopeValidator, IEventService events,
+            ITokenSigningService signingService,IRequestValidatorHelper requestValidatorHelper )
         {
             _options = options;
             _authorizationCodes = authorizationCodes;
@@ -59,7 +63,61 @@ namespace Thinktecture.IdentityServer.Core.Validation
             _customRequestValidator = customRequestValidator;
             _scopeValidator = scopeValidator;
             _events = events;
+            _signingService = signingService;
+            _requestValidatorHelper = requestValidatorHelper;
         }
+
+        public ValidatedTokenRequest ValidatedRequest
+        {
+            get { return _validatedRequest; }
+        }
+
+
+        public async Task<ValidationResult> ValidateRequestForAppIdAsync(NameValueCollection parameters, Client client)
+        {
+            Logger.Info("Start token request validation for appid with CPMS.");
+            string appId = parameters.Get(Constants.TokenRequest.AppId);
+            string publisherid = parameters.Get(Constants.TokenRequest.PublisherId);
+            if (appId != null)
+            {
+                var outputClaims = new List<Claim>
+                {
+                    new Claim(Constants.ClaimTypes.ClientId, client.ClientId),
+                };
+
+                // add scope
+                outputClaims.Add(new Claim(Constants.ClaimTypes.Scope, Constants.StandardScopes.application));
+                //add appid
+                outputClaims.Add(new Claim(Constants.ClaimTypes.Appid, appId));
+                var token = new Token(Constants.TokenTypes.AccessToken)
+                {
+                    Audience = string.Format(Constants.AccessTokenAudience, _options.IssuerUri.EnsureTrailingSlash()),
+                    Issuer = _options.IssuerUri,
+                    Lifetime = client.AccessTokenLifetime,
+                    Claims = outputClaims.Distinct(new ClaimComparer()).ToList(),
+                    Client = client
+                };
+
+                string signedToken = await _signingService.SignTokenAsync(token);
+
+                string servicePublisherId = _requestValidatorHelper.CallServiceGet(signedToken, ConfigurationManager.AppSettings["cpmsuri"],
+                    "publisherid");
+
+                //TODO:merge if and extract to diff class
+                if (servicePublisherId == null)
+                {
+                    return Valid();
+                }
+                if (servicePublisherId.Equals(publisherid, StringComparison.Ordinal))
+                {
+                    return Valid();
+                }
+
+                return Invalid("Application Id is not valid");
+            }
+            return Valid();
+        }
+
 
         public async Task<ValidationResult> ValidateRequestAsync(NameValueCollection parameters, Client client)
         {
@@ -84,7 +142,7 @@ namespace Thinktecture.IdentityServer.Core.Validation
             /////////////////////////////////////////////
             // check grant type
             /////////////////////////////////////////////
-            var grantType = parameters.Get(Constants.TokenRequest.GrantType);
+            string grantType = parameters.Get(Constants.TokenRequest.GrantType);
             if (grantType.IsMissing())
             {
                 LogError("Grant type is missing.");
@@ -113,7 +171,7 @@ namespace Thinktecture.IdentityServer.Core.Validation
             }
 
             // custom grant type
-            var result = await RunValidationAsync(ValidateCustomGrantRequestAsync, parameters);
+            ValidationResult result = await RunValidationAsync(ValidateCustomGrantRequestAsync, parameters);
 
             if (result.IsError)
             {
@@ -129,21 +187,22 @@ namespace Thinktecture.IdentityServer.Core.Validation
             return result;
         }
 
-        async Task<ValidationResult> RunValidationAsync(Func<NameValueCollection, Task<ValidationResult>> validationFunc, NameValueCollection parameters)
+        private async Task<ValidationResult> RunValidationAsync(
+            Func<NameValueCollection, Task<ValidationResult>> validationFunc, NameValueCollection parameters)
         {
             // run standard validation
-            var result = await validationFunc(parameters);
+            ValidationResult result = await validationFunc(parameters);
             if (result.IsError)
             {
                 return result;
             }
 
             // run custom validation
-            var customResult = await _customRequestValidator.ValidateTokenRequestAsync(_validatedRequest);
+            ValidationResult customResult = await _customRequestValidator.ValidateTokenRequestAsync(_validatedRequest);
 
             if (customResult.IsError)
             {
-                var message = "Custom token request validator error";
+                string message = "Custom token request validator error";
 
                 if (customResult.Error.IsPresent())
                 {
@@ -175,10 +234,10 @@ namespace Thinktecture.IdentityServer.Core.Validation
             /////////////////////////////////////////////
             // validate authorization code
             /////////////////////////////////////////////
-            var code = parameters.Get(Constants.TokenRequest.Code);
+            string code = parameters.Get(Constants.TokenRequest.Code);
             if (code.IsMissing())
             {
-                var error = "Authorization code is missing.";
+                string error = "Authorization code is missing.";
                 LogError(error);
                 RaiseFailedAuthorizationCodeRedeemedEvent(null, error);
 
@@ -187,7 +246,7 @@ namespace Thinktecture.IdentityServer.Core.Validation
 
             _validatedRequest.AuthorizationCodeHandle = code;
 
-            var authZcode = await _authorizationCodes.GetAsync(code);
+            AuthorizationCode authZcode = await _authorizationCodes.GetAsync(code);
             if (authZcode == null)
             {
                 LogError("Invalid authorization code: " + code);
@@ -203,7 +262,8 @@ namespace Thinktecture.IdentityServer.Core.Validation
             /////////////////////////////////////////////
             if (authZcode.Client.ClientId != _validatedRequest.Client.ClientId)
             {
-                LogError(string.Format("Client {0} is trying to use a code from client {1}", _validatedRequest.Client.ClientId, authZcode.Client.ClientId));
+                LogError(string.Format("Client {0} is trying to use a code from client {1}",
+                    _validatedRequest.Client.ClientId, authZcode.Client.ClientId));
                 RaiseFailedAuthorizationCodeRedeemedEvent(code, "Invalid client binding");
 
                 return Invalid(Constants.TokenErrors.InvalidGrant);
@@ -214,7 +274,7 @@ namespace Thinktecture.IdentityServer.Core.Validation
             /////////////////////////////////////////////
             if (authZcode.CreationTime.HasExceeded(_validatedRequest.Client.AuthorizationCodeLifetime))
             {
-                var error = "Authorization code is expired";
+                string error = "Authorization code is expired";
                 LogError(error);
                 RaiseFailedAuthorizationCodeRedeemedEvent(code, error);
 
@@ -226,10 +286,10 @@ namespace Thinktecture.IdentityServer.Core.Validation
             /////////////////////////////////////////////
             // validate redirect_uri
             /////////////////////////////////////////////
-            var redirectUri = parameters.Get(Constants.TokenRequest.RedirectUri);
+            string redirectUri = parameters.Get(Constants.TokenRequest.RedirectUri);
             if (redirectUri.IsMissing())
             {
-                var error = "Redirect URI is missing.";
+                string error = "Redirect URI is missing.";
                 LogError(error);
                 RaiseFailedAuthorizationCodeRedeemedEvent(code, error);
 
@@ -238,7 +298,7 @@ namespace Thinktecture.IdentityServer.Core.Validation
 
             if (redirectUri.Equals(_validatedRequest.AuthorizationCode.RedirectUri, StringComparison.Ordinal) == false)
             {
-                var error = "Invalid redirect_uri: " + redirectUri;
+                string error = "Invalid redirect_uri: " + redirectUri;
                 LogError(error);
                 RaiseFailedAuthorizationCodeRedeemedEvent(code, error);
 
@@ -251,7 +311,7 @@ namespace Thinktecture.IdentityServer.Core.Validation
             if (_validatedRequest.AuthorizationCode.RequestedScopes == null ||
                 !_validatedRequest.AuthorizationCode.RequestedScopes.Any())
             {
-                var error = "Authorization code has no associated scopes.";
+                string error = "Authorization code has no associated scopes.";
                 LogError(error);
                 RaiseFailedAuthorizationCodeRedeemedEvent(code, error);
 
@@ -264,7 +324,7 @@ namespace Thinktecture.IdentityServer.Core.Validation
             /////////////////////////////////////////////
             if (await _users.IsActiveAsync(_validatedRequest.AuthorizationCode.Subject) == false)
             {
-                var error = "User has been disabled: " + _validatedRequest.AuthorizationCode.Subject;
+                string error = "User has been disabled: " + _validatedRequest.AuthorizationCode.Subject;
                 LogError(error);
                 RaiseFailedAuthorizationCodeRedeemedEvent(code, error);
 
@@ -329,7 +389,7 @@ namespace Thinktecture.IdentityServer.Core.Validation
                 LogError("EnableLocalLogin is disabled, failing with UnsupportedGrantType");
                 return Invalid(Constants.TokenErrors.UnsupportedGrantType);
             }
-            
+
             /////////////////////////////////////////////
             // check if client is authorized for grant type
             /////////////////////////////////////////////
@@ -351,8 +411,8 @@ namespace Thinktecture.IdentityServer.Core.Validation
             /////////////////////////////////////////////
             // check resource owner credentials
             /////////////////////////////////////////////
-            var userName = parameters.Get(Constants.TokenRequest.UserName);
-            var password = parameters.Get(Constants.TokenRequest.Password);
+            string userName = parameters.Get(Constants.TokenRequest.UserName);
+            string password = parameters.Get(Constants.TokenRequest.Password);
 
             if (userName.IsMissing() || password.IsMissing())
             {
@@ -378,7 +438,7 @@ namespace Thinktecture.IdentityServer.Core.Validation
             signInMessage.ClientId = _validatedRequest.Client.ClientId;
 
             // process acr values
-            var acr = parameters.Get(Constants.AuthorizeRequest.AcrValues);
+            string acr = parameters.Get(Constants.AuthorizeRequest.AcrValues);
             if (acr.IsPresent())
             {
                 if (acr.Length > Constants.MaxAcrValuesLength)
@@ -387,10 +447,10 @@ namespace Thinktecture.IdentityServer.Core.Validation
                     return Invalid(Constants.TokenErrors.InvalidRequest);
                 }
 
-                var acrValues = acr.FromSpaceSeparatedString().Distinct().ToList();
+                List<string> acrValues = acr.FromSpaceSeparatedString().Distinct().ToList();
 
                 // look for well-known acr value -- idp
-                var idp = acrValues.FirstOrDefault(x => x.StartsWith(Constants.KnownAcrValues.HomeRealm));
+                string idp = acrValues.FirstOrDefault(x => x.StartsWith(Constants.KnownAcrValues.HomeRealm));
                 if (idp.IsPresent())
                 {
                     signInMessage.IdP = idp.Substring(Constants.KnownAcrValues.HomeRealm.Length);
@@ -398,7 +458,7 @@ namespace Thinktecture.IdentityServer.Core.Validation
                 }
 
                 // look for well-known acr value -- tenant
-                var tenant = acrValues.FirstOrDefault(x => x.StartsWith(Constants.KnownAcrValues.Tenant));
+                string tenant = acrValues.FirstOrDefault(x => x.StartsWith(Constants.KnownAcrValues.Tenant));
                 if (tenant.IsPresent())
                 {
                     signInMessage.Tenant = tenant.Substring(Constants.KnownAcrValues.Tenant.Length);
@@ -417,7 +477,7 @@ namespace Thinktecture.IdentityServer.Core.Validation
             /////////////////////////////////////////////
             // authenticate user
             /////////////////////////////////////////////
-            var authnResult = await _users.AuthenticateLocalAsync(userName, password, signInMessage);
+            AuthenticateResult authnResult = await _users.AuthenticateLocalAsync(userName, password, signInMessage);
             if (authnResult == null || authnResult.IsError || authnResult.IsPartialSignIn)
             {
                 LogError("User authentication failed");
@@ -438,10 +498,10 @@ namespace Thinktecture.IdentityServer.Core.Validation
         {
             Logger.Info("Start validation of refresh token request");
 
-            var refreshTokenHandle = parameters.Get(Constants.TokenRequest.RefreshToken);
+            string refreshTokenHandle = parameters.Get(Constants.TokenRequest.RefreshToken);
             if (refreshTokenHandle.IsMissing())
             {
-                var error = "Refresh token is missing";
+                string error = "Refresh token is missing";
                 LogError(error);
                 RaiseRefreshTokenRefreshFailureEvent(null, error);
 
@@ -453,10 +513,10 @@ namespace Thinktecture.IdentityServer.Core.Validation
             /////////////////////////////////////////////
             // check if refresh token is valid
             /////////////////////////////////////////////
-            var refreshToken = await _refreshTokens.GetAsync(refreshTokenHandle);
+            RefreshToken refreshToken = await _refreshTokens.GetAsync(refreshTokenHandle);
             if (refreshToken == null)
             {
-                var error = "Refresh token is invalid";
+                string error = "Refresh token is invalid";
                 LogWarn(error);
                 RaiseRefreshTokenRefreshFailureEvent(refreshTokenHandle, error);
 
@@ -468,7 +528,7 @@ namespace Thinktecture.IdentityServer.Core.Validation
             /////////////////////////////////////////////
             if (refreshToken.CreationTime.HasExceeded(refreshToken.LifeTime))
             {
-                var error = "Refresh token has expired";
+                string error = "Refresh token has expired";
                 LogWarn(error);
                 RaiseRefreshTokenRefreshFailureEvent(refreshTokenHandle, error);
 
@@ -481,7 +541,8 @@ namespace Thinktecture.IdentityServer.Core.Validation
             /////////////////////////////////////////////
             if (_validatedRequest.Client.ClientId != refreshToken.ClientId)
             {
-                LogError(string.Format("Client {0} tries to refresh token belonging to client {1}", _validatedRequest.Client.ClientId, refreshToken.ClientId));
+                LogError(string.Format("Client {0} tries to refresh token belonging to client {1}",
+                    _validatedRequest.Client.ClientId, refreshToken.ClientId));
                 RaiseRefreshTokenRefreshFailureEvent(refreshTokenHandle, "Invalid client binding");
 
                 return Invalid(Constants.TokenErrors.InvalidGrant);
@@ -490,11 +551,12 @@ namespace Thinktecture.IdentityServer.Core.Validation
             /////////////////////////////////////////////
             // check if client still has offline_access scope
             /////////////////////////////////////////////
-            if (_validatedRequest.Client.ScopeRestrictions != null && _validatedRequest.Client.ScopeRestrictions.Count != 0)
+            if (_validatedRequest.Client.ScopeRestrictions != null &&
+                _validatedRequest.Client.ScopeRestrictions.Count != 0)
             {
                 if (!_validatedRequest.Client.ScopeRestrictions.Contains(Constants.StandardScopes.OfflineAccess))
                 {
-                    var error = "Client does not have access to offline_access scope anymore";
+                    string error = "Client does not have access to offline_access scope anymore";
                     LogError(error);
                     RaiseRefreshTokenRefreshFailureEvent(refreshTokenHandle, error);
 
@@ -507,11 +569,12 @@ namespace Thinktecture.IdentityServer.Core.Validation
             /////////////////////////////////////////////
             // make sure user is enabled
             /////////////////////////////////////////////
-            var principal = IdentityServerPrincipal.FromSubjectId(_validatedRequest.RefreshToken.SubjectId, refreshToken.AccessToken.Claims);
+            ClaimsPrincipal principal = IdentityServerPrincipal.FromSubjectId(_validatedRequest.RefreshToken.SubjectId,
+                refreshToken.AccessToken.Claims);
 
             if (await _users.IsActiveAsync(principal) == false)
             {
-                var error = "User has been disabled: " + _validatedRequest.RefreshToken.SubjectId;
+                string error = "User has been disabled: " + _validatedRequest.RefreshToken.SubjectId;
                 LogError(error);
                 RaiseRefreshTokenRefreshFailureEvent(refreshTokenHandle, error);
 
@@ -559,7 +622,7 @@ namespace Thinktecture.IdentityServer.Core.Validation
             /////////////////////////////////////////////
             // validate custom grant type
             /////////////////////////////////////////////
-            var result = await _customGrantValidator.ValidateAsync(_validatedRequest);
+            CustomGrantValidationResult result = await _customGrantValidator.ValidateAsync(_validatedRequest);
 
             if (result == null)
             {
@@ -584,14 +647,14 @@ namespace Thinktecture.IdentityServer.Core.Validation
 
         private async Task<bool> ValidateRequestedScopesAsync(NameValueCollection parameters)
         {
-            var scopes = parameters.Get(Constants.TokenRequest.Scope);
+            string scopes = parameters.Get(Constants.TokenRequest.Scope);
             if (scopes.IsMissingOrTooLong(Constants.MaxScopeLength))
             {
                 Logger.Warn("Scopes missing or too long");
                 return false;
             }
 
-            var requestedScopes = ScopeValidator.ParseScopesString(scopes);
+            List<string> requestedScopes = ScopeValidator.ParseScopesString(scopes);
 
             if (requestedScopes == null)
             {
@@ -634,7 +697,7 @@ namespace Thinktecture.IdentityServer.Core.Validation
         private void LogError(string message)
         {
             var validationLog = new TokenRequestValidationLog(_validatedRequest);
-            var json = LogSerializer.Serialize(validationLog);
+            string json = LogSerializer.Serialize(validationLog);
 
             Logger.ErrorFormat("{0}\n {1}", message, json);
         }
@@ -642,7 +705,7 @@ namespace Thinktecture.IdentityServer.Core.Validation
         private void LogWarn(string message)
         {
             var validationLog = new TokenRequestValidationLog(_validatedRequest);
-            var json = LogSerializer.Serialize(validationLog);
+            string json = LogSerializer.Serialize(validationLog);
 
             Logger.WarnFormat("{0}\n {1}", message, json);
         }
@@ -650,12 +713,13 @@ namespace Thinktecture.IdentityServer.Core.Validation
         private void LogSuccess()
         {
             var validationLog = new TokenRequestValidationLog(_validatedRequest);
-            var json = LogSerializer.Serialize(validationLog);
+            string json = LogSerializer.Serialize(validationLog);
 
             Logger.InfoFormat("{0}\n {1}", "Token request validation success", json);
         }
 
-        private void RaiseSuccessfulResourceOwnerAuthenticationEvent(string userName, string subjectId, SignInMessage signInMessage)
+        private void RaiseSuccessfulResourceOwnerAuthenticationEvent(string userName, string subjectId,
+            SignInMessage signInMessage)
         {
             _events.RaiseSuccessfulResourceOwnerFlowAuthenticationEvent(userName, subjectId, signInMessage);
         }
@@ -672,12 +736,15 @@ namespace Thinktecture.IdentityServer.Core.Validation
 
         private void RaiseSuccessfulAuthorizationCodeRedeemedEvent()
         {
-            _events.RaiseSuccessAuthorizationCodeRedeemedEvent(_validatedRequest.Client, _validatedRequest.AuthorizationCodeHandle);
+            _events.RaiseSuccessAuthorizationCodeRedeemedEvent(_validatedRequest.Client,
+                _validatedRequest.AuthorizationCodeHandle);
         }
 
         private void RaiseRefreshTokenRefreshFailureEvent(string handle, string error)
         {
             _events.RaiseFailedRefreshTokenRefreshEvent(_validatedRequest.Client, handle, error);
         }
+
+       
     }
 }

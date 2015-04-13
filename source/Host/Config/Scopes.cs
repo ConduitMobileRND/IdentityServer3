@@ -43,6 +43,13 @@ namespace Thinktecture.IdentityServer.Host.Config
 
                     new Scope
                     {
+                        Name = "appid",
+                        DisplayName = "Como application id",
+                        Type = ScopeType.Resource,
+                        Emphasize = false,
+                    },
+                    new Scope
+                    {
                         Name = "read",
                         DisplayName = "Read data",
                         Type = ScopeType.Resource,
@@ -52,6 +59,34 @@ namespace Thinktecture.IdentityServer.Host.Config
                     {
                         Name = "write",
                         DisplayName = "Write data",
+                        Type = ScopeType.Resource,
+                        Emphasize = true,
+                    },
+                      new Scope
+                    {
+                        Name = "add",
+                        DisplayName = "Add resource",
+                        Type = ScopeType.Resource,
+                        Emphasize = true,
+                    },
+                     new Scope
+                    {
+                        Name = "application",
+                        DisplayName = "Application",
+                        Type = ScopeType.Resource,
+                        Emphasize = true,
+                    },
+                      new Scope
+                    {
+                        Name = "scratchcard",
+                        DisplayName = "Scratchcard",
+                        Type = ScopeType.Resource,
+                        Emphasize = true,
+                    },
+                      new Scope
+                    {
+                        Name = "save",
+                        DisplayName = "Save",
                         Type = ScopeType.Resource,
                         Emphasize = true,
                     },

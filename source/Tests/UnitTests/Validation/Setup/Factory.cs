@@ -58,7 +58,8 @@ namespace Thinktecture.IdentityServer.Tests.Validation
             IUserService userService = null,
             ICustomGrantValidator customGrantValidator = null,
             ICustomRequestValidator customRequestValidator = null,
-            ScopeValidator scopeValidator = null)
+            ScopeValidator scopeValidator = null,
+            ITokenSigningService tokenSigningService = null,IRequestValidatorHelper requestValidatorHelper = null)
         {
             if (options == null)
             {
@@ -95,6 +96,16 @@ namespace Thinktecture.IdentityServer.Tests.Validation
                 scopeValidator = new ScopeValidator(scopes);
             }
 
+            if (tokenSigningService == null)
+            {
+                tokenSigningService = new DefaultTokenSigningService(options);
+            }
+
+            if (requestValidatorHelper == null)
+            {
+                requestValidatorHelper = new Mock<IRequestValidatorHelper>().Object;
+            }
+
             return new TokenRequestValidator(
                 options, 
                 authorizationCodeStore, 
@@ -102,8 +113,8 @@ namespace Thinktecture.IdentityServer.Tests.Validation
                 userService, 
                 customGrantValidator, 
                 customRequestValidator, 
-                scopeValidator, 
-                new DefaultEventService());
+                scopeValidator,
+                new DefaultEventService(), tokenSigningService, requestValidatorHelper);
         }
 
         public static AuthorizeRequestValidator CreateAuthorizeRequestValidator(

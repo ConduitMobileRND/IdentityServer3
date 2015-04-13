@@ -115,6 +115,11 @@ namespace Thinktecture.IdentityServer.Core.Endpoints
                 return this.TokenErrorResponse(Constants.TokenErrors.InvalidClient);
             }
 
+            var appidvalidation = await _requestValidator.ValidateRequestForAppIdAsync(parameters, client);
+            if (appidvalidation.IsError)
+            {
+                return this.TokenErrorResponse(appidvalidation.Error);
+            }
             // validate the token request
             var result = await _requestValidator.ValidateRequestAsync(parameters, client);
 

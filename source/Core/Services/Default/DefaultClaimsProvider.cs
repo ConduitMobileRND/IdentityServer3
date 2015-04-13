@@ -129,6 +129,11 @@ namespace Thinktecture.IdentityServer.Core.Services.Default
             };
 
             // check for client claims
+            return await ConstructOutputClaims(subject, client, scopes, outputClaims);
+        }
+
+        protected async Task<IEnumerable<Claim>> ConstructOutputClaims(ClaimsPrincipal subject, Client client, IEnumerable<Scope> scopes, List<Claim> outputClaims)
+        {
             if (client.Claims != null && client.Claims.Any())
             {
                 if (subject == null || client.AlwaysSendClientClaims)

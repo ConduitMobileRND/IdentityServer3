@@ -281,6 +281,14 @@ namespace Thinktecture.IdentityServer.Core.Configuration
         /// </value>
         public Registration<ICorsPolicyService> CorsPolicyService { get; set; }
 
+        /// <summary>
+        /// Gets or sets request validation helper.
+        /// </summary>
+        /// <value>
+        /// The request validation helper.
+        /// </value>
+        public Registration<Validation.IRequestValidatorHelper> RequestValidatorHelper { get; set; }
+
         internal void Validate()
         {
             if (UserService == null) LogAndStop("UserService not configured");
@@ -299,5 +307,7 @@ namespace Thinktecture.IdentityServer.Core.Configuration
             Logger.Error(message);
             throw new InvalidOperationException(message);
         }
+
+       
     }
 }
