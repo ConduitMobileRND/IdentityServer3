@@ -47,6 +47,9 @@ namespace Como.Mobile.Validators
 
                 // add scope
                 outputClaims.Add(new Claim(Constants.ClaimTypes.Scope, Constants.StandardScopes.application));
+                outputClaims.Add(new Claim(Constants.ClaimTypes.Scope, "add"));
+
+
                 //add appid
                 outputClaims.Add(new Claim(Constants.ClaimTypes.Appid, appId));
                 var token = new Token(Constants.TokenTypes.AccessToken)
@@ -61,18 +64,16 @@ namespace Como.Mobile.Validators
                 string signedToken = await _signingService.SignTokenAsync(token);
 
                 string servicePublisherId = _requestValidatorHelper.CallServiceGet(signedToken, ConfigurationManager.AppSettings["cpmsuri"],
-                    "publisherid");
+                    "publisher");
 
-                //TODO:merge if and extract to diff class
-                if (servicePublisherId == null)
+                //if publisher id returned from CPMS is null then application
+                //doesn't belongs to specific user (just created application),or
+                //if publisher id returned from CPMS equals to parameter one
+                //which means application belongs to this specific user
+                if (servicePublisherId == null || servicePublisherId.Equals(publisherid, StringComparison.Ordinal))
                 {
                     return Valid();
                 }
-                if (servicePublisherId.Equals(publisherid, StringComparison.Ordinal))
-                {
-                    return Valid();
-                }
-
                 return Invalid("Application Id is not valid");
             }
             return Valid();
