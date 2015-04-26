@@ -1,4 +1,5 @@
-﻿using Como.Mobile.AspNetIdentityUserService;
+﻿using Como.Mobile.Idsrv.AspNetIdentityUserService;
+using Como.Mobile.Idsrv.Entities;
 using Thinktecture.IdentityServer.Core.Configuration;
 using Thinktecture.IdentityServer.Core.Services;
 

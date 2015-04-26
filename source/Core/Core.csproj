@@ -54,6 +54,18 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Autofac.WebApi2.3.4.0\lib\net45\Autofac.Integration.WebApi.dll</HintPath>
     </Reference>
+    <Reference Include="EntityFramework">
+      <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Core">
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.0\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.EntityFramework">
+      <HintPath>..\packages\Microsoft.AspNet.Identity.EntityFramework.2.2.0\lib\net45\Microsoft.AspNet.Identity.EntityFramework.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Owin, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -132,6 +144,7 @@
     <Compile Include="Configuration\CookieSecureMode.cs" />
     <Compile Include="Configuration\EventsOptions.cs" />
     <Compile Include="Configuration\X509CertificateDataProtector.cs" />
+    <Compile Include="Endpoints\ComoUserController.cs" />
     <Compile Include="Endpoints\Connect\RevocationEndpointController.cs" />
     <Compile Include="Endpoints\WelcomeController.cs" />
     <Compile Include="Extensions\DateTimeOffsetHelper.cs" />
@@ -247,6 +260,7 @@
     <Compile Include="Services\ExternalClaimsFilter\ExternalClaimsFilterUserService.cs" />
     <Compile Include="Services\ExternalClaimsFilter\FacebookClaimsFilter.cs" />
     <Compile Include="Services\IEventService.cs" />
+    <Compile Include="Validation\ComoRequestValidator.cs" />
     <Compile Include="Validation\CustomGrantValidationResult.cs" />
     <Compile Include="Logging\Models\AuthorizeRequestValidationLog.cs" />
     <Compile Include="Logging\Models\ClientValidationLog.cs" />
@@ -255,6 +269,9 @@
     <Compile Include="Logging\Models\TokenValidationLog.cs" />
     <Compile Include="Logging\Models\TokenRequestValidationLog.cs" />
     <Compile Include="Validation\ErrorTypes.cs" />
+    <Compile Include="Validation\IComoRequestValidator.cs" />
+    <Compile Include="Validation\IRequestValidatorHelper.cs" />
+    <Compile Include="Validation\RequestValidatorHelper.cs" />
     <Compile Include="Validation\TokenRevocationRequestValidationResult.cs" />
     <Compile Include="Validation\TokenRevocationRequestValidator.cs" />
     <Compile Include="Validation\ValidationResultBase.cs" />
@@ -575,11 +592,16 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Como.Mobile.Validators\Como.Mobile.Validators.csproj">
-      <Project>{95B302CF-6206-43C5-B844-F7A324D5B1F0}</Project>
-      <Name>Como.Mobile.Validators</Name>
+    <ProjectReference Include="..\Como.Mobile.Idsrv.Entities\Como.Mobile.Idsrv.Entities.csproj">
+      <Project>{76a1f63b-8083-423d-9fd7-918b071202b1}</Project>
+      <Name>Como.Mobile.Idsrv.Entities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Como.Mobile.Idsrv.Providers\Como.Mobile.Idsrv.Providers.csproj">
+      <Project>{B57D7850-D7E3-43C1-9208-263E74C510FC}</Project>
+      <Name>Como.Mobile.Idsrv.Providers</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

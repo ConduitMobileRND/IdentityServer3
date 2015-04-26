@@ -1,4 +1,4 @@
-﻿namespace Como.Mobile.Validators
+﻿namespace Como.Mobile.Idsrv.Validators
 {
     public static class StringsExtensions
     {

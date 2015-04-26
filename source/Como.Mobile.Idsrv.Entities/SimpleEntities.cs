@@ -17,11 +17,13 @@
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Como.Mobile.Idsrv.Providers;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
-using Constants = Thinktecture.IdentityServer.Core.Constants;
+using Microsoft.Owin.Security.DataProtection;
+using Microsoft.AspNet.Identity.Owin;
 
-namespace Como.Mobile.AspNetIdentityUserService
+namespace Como.Mobile.Idsrv.Entities
 {
     public class User : IdentityUser
     {
@@ -81,21 +83,33 @@ namespace Como.Mobile.AspNetIdentityUserService
 
     public class UserManager : UserManager<User, string>
     {
-        public UserManager(UserStore store)
+        private readonly IIdentityEmailProvider _emailProvider;
+
+        public UserManager(UserStore store,IIdentityEmailProvider emailProvider)
             : base(store)
         {
+            if (emailProvider == null) throw new ArgumentNullException("emailProvider");
+            _emailProvider = emailProvider;
             PasswordHasher = new SqlPasswordHasher();
             ClaimsIdentityFactory = new ClaimsFactory();
+            var provider = new DpapiDataProtectionProvider();
+            UserTokenProvider = new DataProtectorTokenProvider<User>(provider.Create("EmailConfirmation"));
         }
+
+        public bool SendPasswordRecoveryEmail(string email,string token,Guid? userId)
+        {
+           return  _emailProvider.SendPasswordRecoveryEmail(email, token, userId);
+        }
+
     }
 
     public class ClaimsFactory : ClaimsIdentityFactory<User, string>
     {
         public ClaimsFactory()
         {
-            UserIdClaimType = Constants.ClaimTypes.Subject;
-            UserNameClaimType = Constants.ClaimTypes.PreferredUserName;
-            RoleClaimType = Constants.ClaimTypes.Role;
+            UserIdClaimType = "sub";
+            UserNameClaimType = "preferred_username";
+            RoleClaimType = "role";
         }
 
         public override async Task<ClaimsIdentity> CreateAsync(UserManager<User, string> manager, User user,

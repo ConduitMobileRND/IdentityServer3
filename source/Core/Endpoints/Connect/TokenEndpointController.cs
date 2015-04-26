@@ -19,7 +19,6 @@ using System.ComponentModel;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-using Como.Mobile.Validators;
 using Thinktecture.IdentityServer.Core.Configuration;
 using Thinktecture.IdentityServer.Core.Configuration.Hosting;
 using Thinktecture.IdentityServer.Core.Events;

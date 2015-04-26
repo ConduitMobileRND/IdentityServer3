@@ -1,9 +1,8 @@
 ﻿using System.Collections.Specialized;
 using System.Threading.Tasks;
 using Thinktecture.IdentityServer.Core.Models;
-using Thinktecture.IdentityServer.Core.Validation;
 
-namespace Como.Mobile.Validators
+namespace Thinktecture.IdentityServer.Core.Validation
 {
     public interface IComoRequestValidator
     {

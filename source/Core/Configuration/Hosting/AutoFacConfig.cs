@@ -16,7 +16,8 @@
 
 using Autofac;
 using Autofac.Integration.WebApi;
-using Como.Mobile.Validators;
+using Como.Mobile.Idsrv.Entities;
+using Como.Mobile.Idsrv.Providers;
 using Microsoft.Owin;
 using System;
 using Thinktecture.IdentityServer.Core.Endpoints;
@@ -52,7 +53,6 @@ namespace Thinktecture.IdentityServer.Core.Configuration.Hosting
             builder.Register(fact.ScopeStore);
             builder.Register(fact.ClientStore);
             builder.RegisterDecorator<IUserService, ExternalClaimsFilterUserService>(fact.UserService);
-            
             // optional from factory
             builder.RegisterDecoratorDefaultInstance<IAuthorizationCodeStore, KeyHashingAuthorizationCodeStore, InMemoryAuthorizationCodeStore>(fact.AuthorizationCodeStore);
             builder.RegisterDecoratorDefaultInstance<ITokenHandleStore, KeyHashingTokenHandleStore, InMemoryTokenHandleStore>(fact.TokenHandleStore);
@@ -76,6 +76,10 @@ namespace Thinktecture.IdentityServer.Core.Configuration.Hosting
             builder.RegisterDefaultType<ILocalizationService, DefaultLocalizationService>(fact.LocalizationService);
             builder.RegisterDefaultType<IClientPermissionsService, DefaultClientPermissionsService>(fact.ClientPermissionsService);
             builder.RegisterDefaultType<IClientSecretValidator, HashedClientSecretValidator>(fact.ClientSecretValidator);
+            builder.RegisterDefaultType<IIdentityEmailProvider, IdentityEmailProvider>(fact.IdentityEmailProvider);  
+
+
+
 
             if (fact.ViewService == null)
             {
@@ -122,6 +126,8 @@ namespace Thinktecture.IdentityServer.Core.Configuration.Hosting
             builder.RegisterType<AuthorizeInteractionResponseGenerator>();
             builder.RegisterType<UserInfoResponseGenerator>();
             builder.RegisterType<EndSessionResponseGenerator>();
+
+            builder.RegisterType<UserManager>();
 
             // for authentication
             var authenticationOptions = options.AuthenticationOptions ?? new AuthenticationOptions();

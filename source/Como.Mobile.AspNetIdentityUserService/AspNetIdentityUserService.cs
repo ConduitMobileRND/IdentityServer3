@@ -25,7 +25,7 @@ using Thinktecture.IdentityServer.Core.Extensions;
 using Thinktecture.IdentityServer.Core.Models;
 using Thinktecture.IdentityServer.Core.Services;
 
-namespace Como.Mobile.AspNetIdentityUserService
+namespace Como.Mobile.Idsrv.AspNetIdentityUserService
 {
     public class AspNetIdentityUserService<TUser, TKey> : IUserService
         where TUser : class, IUser<TKey>, new()

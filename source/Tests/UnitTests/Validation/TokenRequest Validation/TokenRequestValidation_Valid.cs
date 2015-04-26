@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using Como.Mobile.Validators;
 using FluentAssertions;
 using Moq;
 using System;

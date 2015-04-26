@@ -212,10 +212,6 @@
     <Compile Include="Validation\ScopeValidation.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Como.Mobile.Validators\Como.Mobile.Validators.csproj">
-      <Project>{95B302CF-6206-43C5-B844-F7A324D5B1F0}</Project>
-      <Name>Como.Mobile.Validators</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Core\Core.csproj">
       <Project>{fb9e026e-bab3-498a-a954-b93b05c146a5}</Project>
       <Name>Core</Name>

@@ -27,7 +27,7 @@ using Thinktecture.IdentityServer.Host;
 using Thinktecture.IdentityServer.Host.Config;
 using Thinktecture.IdentityServer.Host.IdMgr;
 
-[assembly: OwinStartup(typeof(Startup))]
+[assembly: OwinStartup("Como", typeof(Startup))]
 
 namespace Thinktecture.IdentityServer.Host
 {
@@ -74,7 +74,7 @@ namespace Thinktecture.IdentityServer.Host
 
                         CorsPolicy = CorsPolicy.AllowAll,
 
-                        AuthenticationOptions = new AuthenticationOptions 
+                        AuthenticationOptions = new AuthenticationOptions
                         {
                             IdentityProviders = ConfigureIdentityProviders,
                         },

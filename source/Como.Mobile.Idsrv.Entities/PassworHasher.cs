@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNet.Identity;
 
-namespace Como.Mobile.AspNetIdentityUserService
+namespace Como.Mobile.Idsrv.Entities
 {
     public class SqlPasswordHasher : PasswordHasher
     {

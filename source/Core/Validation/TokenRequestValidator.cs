@@ -22,7 +22,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Como.Mobile.Validators;
 using Newtonsoft.Json;
 using Thinktecture.IdentityModel;
 using Thinktecture.IdentityModel.Http;

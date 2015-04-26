@@ -76,6 +76,7 @@ namespace Thinktecture.IdentityServer.Host.Config
 
                         //alexey
                         "http://localhost:42558/index.html",
+                        "http://localhost:8100",
 
                         // WPF client
                         "oob://localhost/wpfclient",
@@ -145,10 +146,12 @@ namespace Thinktecture.IdentityServer.Host.Config
                         "http://localhost:2672/",
                         //Alexey
                         "http://localhost:2671/",
+                        "http://localhost:61683/users/login"
                     },
                     PostLogoutRedirectUris = new List<string>
                     {
-                        "http://localhost:2672/"
+                        "http://localhost:2672/",
+                        "http://localhost:61683/"
                     }
                 },
                 new Client

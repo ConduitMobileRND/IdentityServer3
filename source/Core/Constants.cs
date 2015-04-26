@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Net;
 using Thinktecture.IdentityServer.Core.Models;
 
@@ -549,6 +550,9 @@ namespace Thinktecture.IdentityServer.Core
             public const string ResumeLoginFromRedirect = "return";
             public const string CspReport = "csp/report";
             public const string ClientPermissions = "permissions";
+            public const string ResetPasswordRequest = "resetpasswordrequest";
+            public const string ResetPassword = "resetpassword";
+            public const string User = "user";
 
             public static class Oidc
             {
@@ -575,6 +579,8 @@ namespace Thinktecture.IdentityServer.Core
                 Oidc.UserInfo,
                 Oidc.IdentityTokenValidation
             };
+
+            
         }
 
         public static class OwinEnvironment

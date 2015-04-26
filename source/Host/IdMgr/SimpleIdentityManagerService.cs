@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-using Como.Mobile.AspNetIdentityUserService;
+using Como.Mobile.Idsrv.Entities;
 using Thinktecture.IdentityManager;
 using Thinktecture.IdentityManager.AspNetIdentity;
 using Thinktecture.IdentityManager.Configuration;

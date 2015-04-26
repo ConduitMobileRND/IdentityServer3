@@ -14,9 +14,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{2D32A6
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Tests", "Tests\UnitTests\Core.Tests.csproj", "{7EAD2E17-3ADA-4E9C-A2B9-5A7B9CC4C0EA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Como.Mobile.AspNetIdentityUserService", "Como.Mobile.AspNetIdentityUserService\Como.Mobile.AspNetIdentityUserService.csproj", "{C6D6F93B-BEE0-482D-AF5D-E66008135C9E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Como.Mobile.Idsrv.AspNetIdentityUserService", "Como.Mobile.AspNetIdentityUserService\Como.Mobile.Idsrv.AspNetIdentityUserService.csproj", "{C6D6F93B-BEE0-482D-AF5D-E66008135C9E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Como.Mobile.Validators", "Como.Mobile.Validators\Como.Mobile.Validators.csproj", "{95B302CF-6206-43C5-B844-F7A324D5B1F0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Como.Mobile.Idsrv.Providers", "Como.Mobile.Idsrv.Providers\Como.Mobile.Idsrv.Providers.csproj", "{B57D7850-D7E3-43C1-9208-263E74C510FC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Como.Mobile.Idsrv.Entities", "Como.Mobile.Idsrv.Entities\Como.Mobile.Idsrv.Entities.csproj", "{76A1F63B-8083-423D-9FD7-918B071202B1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,10 +42,14 @@ Global
 		{C6D6F93B-BEE0-482D-AF5D-E66008135C9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C6D6F93B-BEE0-482D-AF5D-E66008135C9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C6D6F93B-BEE0-482D-AF5D-E66008135C9E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{95B302CF-6206-43C5-B844-F7A324D5B1F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{95B302CF-6206-43C5-B844-F7A324D5B1F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{95B302CF-6206-43C5-B844-F7A324D5B1F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{95B302CF-6206-43C5-B844-F7A324D5B1F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B57D7850-D7E3-43C1-9208-263E74C510FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B57D7850-D7E3-43C1-9208-263E74C510FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B57D7850-D7E3-43C1-9208-263E74C510FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B57D7850-D7E3-43C1-9208-263E74C510FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76A1F63B-8083-423D-9FD7-918B071202B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76A1F63B-8083-423D-9FD7-918B071202B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76A1F63B-8083-423D-9FD7-918B071202B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76A1F63B-8083-423D-9FD7-918B071202B1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

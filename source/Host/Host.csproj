@@ -4,6 +4,9 @@
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+
+  <Target Name="GatherAllFilesToPublish">
+  </Target>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -168,9 +171,13 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Como.Mobile.AspNetIdentityUserService\Como.Mobile.AspNetIdentityUserService.csproj">
+    <ProjectReference Include="..\Como.Mobile.AspNetIdentityUserService\Como.Mobile.Idsrv.AspNetIdentityUserService.csproj">
       <Project>{c6d6f93b-bee0-482d-af5d-e66008135c9e}</Project>
-      <Name>Como.Mobile.AspNetIdentityUserService</Name>
+      <Name>Como.Mobile.Idsrv.AspNetIdentityUserService</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Como.Mobile.Idsrv.Entities\Como.Mobile.Idsrv.Entities.csproj">
+      <Project>{76a1f63b-8083-423d-9fd7-918b071202b1}</Project>
+      <Name>Como.Mobile.Idsrv.Entities</Name>
     </ProjectReference>
     <ProjectReference Include="..\Core\Core.csproj">
       <Project>{fb9e026e-bab3-498a-a954-b93b05c146a5}</Project>

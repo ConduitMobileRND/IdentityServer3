@@ -16,10 +16,11 @@
 
 using System;
 using System.Collections.Generic;
-using Como.Mobile.Validators;
+using Como.Mobile.Idsrv.Providers;
 using Thinktecture.IdentityServer.Core.Logging;
 using Thinktecture.IdentityServer.Core.Services;
 using Thinktecture.IdentityServer.Core.Services.Default;
+using Thinktecture.IdentityServer.Core.Validation;
 
 namespace Thinktecture.IdentityServer.Core.Configuration
 {
@@ -294,6 +295,11 @@ namespace Thinktecture.IdentityServer.Core.Configuration
         /// Gets or sets COMO custom validator.
         /// </summary>
         public Registration<IComoRequestValidator> ComoRequestValidator { get; set; }
+
+
+
+        public Registration<IIdentityEmailProvider> IdentityEmailProvider { get; set; }
+
 
         internal void Validate()
         {
