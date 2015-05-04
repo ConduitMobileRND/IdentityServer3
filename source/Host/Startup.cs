@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System;
 using System.Configuration;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Facebook;
@@ -77,6 +78,8 @@ namespace Thinktecture.IdentityServer.Host
                         AuthenticationOptions = new AuthenticationOptions
                         {
                             IdentityProviders = ConfigureIdentityProviders,
+                            EnableSignOutPrompt = false,
+                            //operating cookies here
                         },
 
                         LoggingOptions = new LoggingOptions
@@ -92,7 +95,9 @@ namespace Thinktecture.IdentityServer.Host
                             RaiseInformationEvents = true,
                             RaiseSuccessEvents = true,
                             RaiseErrorEvents = true
-                        }
+                        },
+                        
+                        
                     };
 
                     coreApp.UseIdentityServer(idsrvOptions);

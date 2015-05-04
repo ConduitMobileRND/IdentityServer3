@@ -85,11 +85,10 @@ namespace Como.Mobile.Idsrv.Entities
     {
         private readonly IIdentityEmailProvider _emailProvider;
 
-        public UserManager(UserStore store,IIdentityEmailProvider emailProvider)
+        public UserManager(UserStore store)
             : base(store)
         {
-            if (emailProvider == null) throw new ArgumentNullException("emailProvider");
-            _emailProvider = emailProvider;
+            _emailProvider = new IdentityEmailProvider();
             PasswordHasher = new SqlPasswordHasher();
             ClaimsIdentityFactory = new ClaimsFactory();
             var provider = new DpapiDataProtectionProvider();

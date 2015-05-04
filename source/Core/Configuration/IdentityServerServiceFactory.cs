@@ -297,7 +297,9 @@ namespace Thinktecture.IdentityServer.Core.Configuration
         public Registration<IComoRequestValidator> ComoRequestValidator { get; set; }
 
 
-
+        /// <summary>
+        /// Gets or sets COMO custom email provider.
+        /// </summary>
         public Registration<IIdentityEmailProvider> IdentityEmailProvider { get; set; }
 
 
