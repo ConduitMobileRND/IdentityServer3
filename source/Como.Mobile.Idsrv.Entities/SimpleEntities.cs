@@ -15,9 +15,11 @@
  */
 
 using System;
+using System.Configuration;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Como.Mobile.Idsrv.Providers;
+using Conduit;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Owin.Security.DataProtection;
@@ -93,6 +95,13 @@ namespace Como.Mobile.Idsrv.Entities
             ClaimsIdentityFactory = new ClaimsFactory();
             var provider = new DpapiDataProtectionProvider();
             UserTokenProvider = new DataProtectorTokenProvider<User>(provider.Create("EmailConfirmation"));
+            //Configure user lockout defaults
+            UserLockoutEnabledByDefault = true;
+            DefaultAccountLockoutTimeSpan = ConfigurationManager.AppSettings["DefaultAccountLockoutTimeSpan"].NoNull(TimeSpan.FromMinutes(5));
+            MaxFailedAccessAttemptsBeforeLockout = ConfigurationManager.AppSettings["MaxFailedAccessAttemptsBeforeLockout"].NoNull(5);
+
+
+
         }
 
         public bool SendPasswordRecoveryEmail(string email,string token,Guid? userId)

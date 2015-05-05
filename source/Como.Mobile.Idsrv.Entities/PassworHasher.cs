@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Text;
+using BrockAllen.IdentityReboot;
 using Microsoft.AspNet.Identity;
 
 namespace Como.Mobile.Idsrv.Entities
 {
-    public class SqlPasswordHasher : PasswordHasher
+    public class SqlPasswordHasher : AdaptivePasswordHasher
     {
-        public override string HashPassword(string password)
-        {
-            return base.HashPassword(password);
-        }
+        
 
         public override PasswordVerificationResult VerifyHashedPassword(string hashedPassword, string providedPassword)
         {
