@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
 using System.Threading.Tasks;
 using Thinktecture.IdentityServer.Core.Models;
 
@@ -37,8 +38,15 @@ namespace Thinktecture.IdentityServer.Core.Services.Default
         protected bool StringCollectionContainsString(IEnumerable<string> uris, string requestedUri)
         {
             if (uris == null) return false;
-
-            return uris.Contains(requestedUri, StringComparer.OrdinalIgnoreCase);
+            //this is como validation logic ,if there is app inside uri only
+            //base url should be checked with client uris collection
+            var uri = new Uri(requestedUri);
+            string baseUrl = requestedUri;
+            if (requestedUri.Contains("app"))
+            {
+                baseUrl = string.Format("{0}://{1}:{2}", uri.Scheme, uri.Host, uri.Port);
+            }
+            return uris.Contains(baseUrl, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -66,5 +74,10 @@ namespace Thinktecture.IdentityServer.Core.Services.Default
         {
             return Task.FromResult(StringCollectionContainsString(client.PostLogoutRedirectUris, requestedUri));
         }
+
+
+
+
+
     }
 }
