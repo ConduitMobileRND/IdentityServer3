@@ -11,6 +11,8 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <DesktopBuildPackageLocation>..\Package\Release-Prod\Conduit.Mobile.Idsrv.zip</DesktopBuildPackageLocation>
+    <DeployIisAppPath>Conduit.Mobile.Idsrv</DeployIisAppPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release-QA|AnyCPU'">
     <OutputPath>bin\</OutputPath>
@@ -207,6 +209,10 @@
       <Project>{fb9e026e-bab3-498a-a954-b93b05c146a5}</Project>
       <Name>Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup Label="SetNugetPackageSources" Condition=" '$(PackageSources)' == '' ">
+    <PackageSource Include="http://nuget.mobile.site.com/api/v2" />
+    <PackageSource Include="https://www.nuget.org/api/v2/" />
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'AzureWebSites|AnyCPU'">
     <OutputPath>bin\</OutputPath>
